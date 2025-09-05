@@ -1,0 +1,5 @@
+{
+  "name": "Resume-Ranker",
+  "description": "Resume Ranker is an intelligent tool that evaluates and ranks your resume based on the job title you’re targeting. It analyzes your skills against industry standards and job requirements, checks your education details (degree pursued or completed), and reviews your knowledge of frameworks and tools. The app also assesses your resume format and ATS-friendliness, ensuring your application is optimized to pass screening systems and stand out to recruiters.",
+  "requestFramePermissions": []
+}
