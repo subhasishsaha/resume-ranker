@@ -49,28 +49,28 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isParsing, setIsParsing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-    
+
         if (file.type !== 'application/pdf') {
             setError('Please upload a PDF file.');
             setResumeFileName('');
             setResumeText('');
             return;
         }
-        
+
         setIsParsing(true);
         setError(null);
         setRankingResult(null);
         setResumeFileName(file.name);
         setResumeText(''); // Reset resume text
-        
+
         try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-            
+
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
@@ -79,11 +79,11 @@ const App: React.FC = () => {
             }
 
             if (fullText.trim().length < 50) { // Heuristic for image-based PDFs
-                 setError('This appears to be an image-based PDF with no readable text. Please upload a text-based PDF.');
-                 setResumeFileName('');
-                 setResumeText('');
-                 setIsParsing(false);
-                 return;
+                setError('This appears to be an image-based PDF with no readable text. Please upload a text-based PDF.');
+                setResumeFileName('');
+                setResumeText('');
+                setIsParsing(false);
+                return;
             }
 
             setResumeText(fullText);
@@ -139,12 +139,14 @@ const App: React.FC = () => {
                 4.  Knowledge of Tools and Frameworks mentioned.
                 5.  Proper Format & ATS Friendliness (clarity, structure, keyword usage).
 
+                Rate each criterion on a scale of 0 to 10. The overall score should be on a scale of 0 to 100.
+
                 The JSON response should conform to this structure:
                 {
                     "overallScore": number,
                     "summary": string,
                     "breakdown": [
-                        { "criterion": string, "score": number, "feedback": string }, ...
+                        { "criterion": string, "score": number (0-10), "feedback": string }, ...
                     ],
                     "keywordAnalysis": {
                         "foundKeywords": [string, ...],
@@ -158,7 +160,7 @@ const App: React.FC = () => {
                 model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: {
-                   tools: [{googleSearch: {}}],
+                    tools: [{ googleSearch: {} }],
                 },
             });
 
@@ -166,13 +168,13 @@ const App: React.FC = () => {
             if (resultText.startsWith('```json')) {
                 resultText = resultText.substring(7, resultText.length - 3).trim();
             } else if (resultText.startsWith('```')) {
-                 resultText = resultText.substring(3, resultText.length - 3).trim();
+                resultText = resultText.substring(3, resultText.length - 3).trim();
             }
-            
+
             try {
-                 const resultJson = JSON.parse(resultText);
-                 setRankingResult(resultJson);
-            } catch(parseError) {
+                const resultJson = JSON.parse(resultText);
+                setRankingResult(resultJson);
+            } catch (parseError) {
                 console.error("Failed to parse JSON response:", parseError);
                 console.error("Raw response text:", response.text);
                 setError("Failed to analyze resume. The model returned an unexpected format.");
@@ -208,7 +210,7 @@ const App: React.FC = () => {
                             {jobTitles.map(job => <option key={job} value={job}>{job}</option>)}
                         </select>
                     </div>
-                     {selectedJob === 'Other' && (
+                    {selectedJob === 'Other' && (
                         <div className="input-group">
                             <label htmlFor="custom-job-title">Please Specify Job Title</label>
                             <input
@@ -237,10 +239,10 @@ const App: React.FC = () => {
 
                 <div className="results-section">
                     {isLoading && (
-                         <div className="loading-container">
+                        <div className="loading-container">
                             <div className="spinner"></div>
                             <p>Analyzing your resume against real-time job data...</p>
-                         </div>
+                        </div>
                     )}
                     {!isLoading && !rankingResult && (
                         <div className="placeholder">
@@ -249,7 +251,7 @@ const App: React.FC = () => {
                         </div>
                     )}
                     {rankingResult && (
-                        <div className="results-display"  aria-live="polite">
+                        <div className="results-display" aria-live="polite">
                             <h2>Analysis Complete</h2>
                             <div className="overall-score-container">
                                 <div className={`score-circle ${getScoreColor(rankingResult.overallScore)}`}>
@@ -272,7 +274,7 @@ const App: React.FC = () => {
                                 ))}
                             </div>
 
-                             {rankingResult.keywordAnalysis && (
+                            {rankingResult.keywordAnalysis && (
                                 <div className="keyword-analysis-section">
                                     <h3>Keyword Analysis</h3>
                                     <div className="keyword-analysis-grid">
@@ -286,7 +288,7 @@ const App: React.FC = () => {
                                         </div>
                                         <div className="keyword-list-container keywords-missing">
                                             <h4>⚠️ Missing Keywords</h4>
-                                             {rankingResult.keywordAnalysis.missingKeywords?.length > 0 ? (
+                                            {rankingResult.keywordAnalysis.missingKeywords?.length > 0 ? (
                                                 <ul className="keyword-list">
                                                     {rankingResult.keywordAnalysis.missingKeywords.map((kw, i) => <li key={i}>{kw}</li>)}
                                                 </ul>
